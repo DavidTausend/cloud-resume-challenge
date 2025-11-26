@@ -25,3 +25,7 @@ img src="assets/readme/crc.webp" alt="A decorative picture featuring Cloud Resum
 - [GitHub](https://github.com/): Essential for repository hosting, enabling code sharing, and project management.
 - [TinyPNG](https://tinypng.com/): Used for compressing images and reducing file sizes without substantial quality loss.
 - [ChatGPT](https://chat.openai.com/): Assisted in generating language learning exercises, evaluating sentence structures, and providing real-time grammar feedback for learners.
+
+## Problems
+
+## Acknowledgments
