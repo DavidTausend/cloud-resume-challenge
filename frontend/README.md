@@ -86,10 +86,16 @@ If Node.js is installed, we can use the lightweight http-server package.
 ```sh
 npm i http-server -g
 ```
+img src="Install_local_server.webp" alt="Install local server with npm">
 
 Package reference: https://www.npmjs.com/package/http-server
 
 ### Server Website
 
-http-server will server a public folder by default where
-the command is run.
+Running the following command will start a static HTTP server using the directory where the command is executed (by default serving the current folder):
+
+```sh
+cd frontend
+http-server
+```
+Once running, the terminal will display the local URL where the resume site can be accessed in the browser.
