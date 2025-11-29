@@ -73,8 +73,23 @@ The generated output is available here:
 - Once the structure is finalized, the CSS will be extracted into its own stylesheet.
 - The HTML markup and CSS selectors will be simplified as much as possible to keep the implementation minimal and clean.
 
-Validate html: https://validator.w3.org/nu/#textarea
+Validate HTML here:: https://validator.w3.org/nu/#textarea
 
+## Serve Static Website Locally
 
+To preview the website and test external CSS files, we need to run a local static server in a Cloud Developer Environment (CDE). Local development technically does not require this, but CDEs do not support file:// browsing, so an HTTP server is recommended.
 
+If Node.js is installed, we can use the lightweight http-server package.
 
+### Install HTTP Server
+
+```sh
+npm i http-server -g
+```
+
+Package reference: https://www.npmjs.com/package/http-server
+
+### Server Website
+
+http-server will server a public folder by default where
+the command is run.
