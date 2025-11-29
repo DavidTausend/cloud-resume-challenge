@@ -73,6 +73,8 @@ The generated output is available here:
 - Once the structure is finalized, the CSS will be extracted into its own stylesheet.
 - The HTML markup and CSS selectors will be simplified as much as possible to keep the implementation minimal and clean.
 
+Validate html: https://validator.w3.org/nu/#textarea
+
 
 
 
