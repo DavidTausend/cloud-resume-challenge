@@ -11,7 +11,7 @@ body {
 }
 
 body {
-  background: #e5e8eb url('/public/assets/images/cloud.webp');
+  background: #e5e8eb url('/assets/images/cloud.webp');
   background-size: cover;
 }
 

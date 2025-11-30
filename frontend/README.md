@@ -8,7 +8,7 @@ I currently live in Germany, where resume expectations differ significantly from
 
 To maintain consistency and ensure a clean layout, I will use the Harvard Resume Template as the basis for my HTML resume. This U.S.–style format is straightforward, professional, and easy to translate into HTML.
 
-I'm going to use the [Harvard Resume Template format](https://careerservices.fas.harvard.edu/channels/create-a-resume-cv-or-cover-letter/#uc_resou
+I'm going to use the [Harvard Resume Template format](https://careerservices.fas.harvard.edu/channels/create-a-resume-cv-or-cover-letter/#uc_resou)
 
 ### Harvard Resume Format Generation
 
@@ -99,3 +99,19 @@ cd frontend
 http-server
 ```
 Once running, the terminal will display the local URL where the resume site can be accessed in the browser.
+
+## Image Size Considerations
+
+One of the background textures was originally 14 MB. To avoid unnecessary bandwidth usage and slow page loads, I optimized the image by converting it to WebP using an online image compression tool.
+
+## Install react router
+
+```sh
+npm install react-router
+```
+
+## Frontend Framework Consideration
+
+- I chose React because it is the most widely used JavaScript frontend framework and provides a familiar component-based structure.
+- I selected Vite.js instead of webpack because the frontend is simple, and Vite provides faster development builds with minimal configuration.
+- I configured React Router v7 and decided to use the declarative routing mode since the application only requires basic navigation.
