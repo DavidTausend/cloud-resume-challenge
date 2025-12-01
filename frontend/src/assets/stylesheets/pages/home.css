@@ -1,3 +1,5 @@
+@import "../breakpoints.css";
+
 .profile_picture {
     display: flex;
     justify-content: center;
@@ -12,4 +14,12 @@
     object-fit: cover;
     border: 4px solid #ddd;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+@media (--small-only) {
+    .profile_picture img {
+        width: 140px;
+        height: 140px;
+        border-width: 3px;
+    }
 }

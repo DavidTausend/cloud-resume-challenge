@@ -1,3 +1,5 @@
+@import "../breakpoints.css";
+
 article>header {
     margin-bottom: 24px;
     border-bottom: 2px solid #ddd;
@@ -68,10 +70,6 @@ article>header a {
     margin-top: 2px;
 }
 
-.resume-section .item .location::before {
-    content: "";
-}
-
 .resume-section .item .duration {
     margin-left: auto;
 }
@@ -86,7 +84,7 @@ article>header a {
     margin-bottom: 2px;
 }
 
-@media (max-width: 768px) {
+@media (--small-only) {
     article>header h1 {
         font-size: 1.5rem;
     }

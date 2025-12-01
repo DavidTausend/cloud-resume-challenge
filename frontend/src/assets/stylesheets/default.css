@@ -1,3 +1,5 @@
+@import "./breakpoints.css";
+
 * {
   box-sizing: border-box;
   font-family: Arial, Helvetica, sans-serif;
@@ -11,7 +13,7 @@ body {
 }
 
 body {
-  background: #e5e8eb url("/assets/images/cloud.webp");
+  background: #e5e8eb url("/src/assets/images/cloud.webp");
   background-size: cover;
   background-position: center;
 }
@@ -69,7 +71,7 @@ p {
   margin: 0 0 8px;
 }
 
-@media (max-width: 768px) {
+@media (--small-only) {
   main>header {
     padding: 8px 16px;
   }
