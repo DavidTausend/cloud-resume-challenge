@@ -1,0 +1,85 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: #e5e8eb url("/assets/images/cloud.webp");
+  background-size: cover;
+  background-position: center;
+}
+
+body>main {
+  min-height: 100vh;
+}
+
+main>header {
+  background: #000;
+  padding: 8px 24px;
+}
+
+main>header nav {
+  display: flex;
+  gap: 24px;
+}
+
+main>header nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+main>header nav a.active {
+  text-decoration: underline;
+}
+
+.content_wrap {
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px 48px;
+}
+
+.content {
+  width: 100%;
+  max-width: 960px;
+}
+
+article {
+  background: #fff;
+  padding: 40px 48px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 8px;
+}
+
+p {
+  margin: 0 0 8px;
+}
+
+@media (max-width: 768px) {
+  main>header {
+    padding: 8px 16px;
+  }
+
+  main>header nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  article {
+    padding: 24px 20px;
+  }
+}
