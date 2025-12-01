@@ -116,8 +116,14 @@ npm install react-router
 - I selected Vite.js instead of webpack because the frontend is simple, and Vite provides faster development builds with minimal configuration.
 - I configured React Router v7 and decided to use the declarative routing mode since the application only requires basic navigation.
 
-## Install postcss
+## Install Postcss
 
 ```sh
 npm i postcss-preset-env -D
+```
+
+## Install Lucide
+
+```sh
+npm install lucide-react
 ```

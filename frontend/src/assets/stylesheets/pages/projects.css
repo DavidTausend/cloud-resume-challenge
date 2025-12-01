@@ -54,6 +54,34 @@
     text-decoration: underline;
 }
 
+.projects-page__header {
+    margin-bottom: 16px;
+}
+
+.projects-page__header h1 {
+    margin: 0 0 4px;
+}
+
+.projects-page__header p {
+    margin: 0 0 8px;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.project-page__header {
+    margin-bottom: 12px;
+}
+
+.project-page__subtitle {
+    margin: 0;
+    color: #555;
+}
+
+.project-page__back {
+    margin-top: 16px;
+    font-size: 0.9rem;
+}
+
 @media (--small-only) {
     .project {
         padding: 12px 14px;

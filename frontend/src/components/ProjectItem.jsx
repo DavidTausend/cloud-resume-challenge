@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function ProjectItem({ project }) {
   if (!project) return null;
@@ -19,13 +20,10 @@ export default function ProjectItem({ project }) {
         </ul>
       )}
 
-      {project.link && (
-        <p className="project-link">
-          <a href={project.link} target="_blank" rel="noreferrer">
-            View project
-          </a>
-        </p>
-      )}
+      {/* Internal route to /projects/:handle */}
+      <p className="project-link">
+        <Link to={`/projects/${project.handle}`}>View project</Link>
+      </p>
     </div>
   );
 }

@@ -1,11 +1,13 @@
+import postcssPresetEnv from "postcss-preset-env";
+
 export default {
-  plugins: {
-    'postcss-preset-env': {
+  plugins: [
+    postcssPresetEnv({
       stage: 1,
       features: {
-        'custom-media-queries': true,
-        'nesting-rules': true,
+        "custom-media-queries": true,
+        "nesting-rules": true,
       },
-    },
-  },
+    }),
+  ],
 };
