@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
 import "css/pages/projects.css";
-import projectsData from "data/projectsData";
+import projectsData from "data/projectsData.json";
 import ProjectItem from "comps/ProjectItem";
 
 export default function ProjectPage() {

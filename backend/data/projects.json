@@ -1,0 +1,10 @@
+[
+  {
+    "handle": "cloud-resume",
+    "title": "Cloud Resume Challenge",
+    "description": "Static resume website deployed to cloud storage + CDN.",
+    "tech": ["HTML", "CSS", "JS", "AWS"],
+    "link": "#",
+    "body": "# Cloud Resume Challenge\n\nThis project implements the Cloud Resume Challenge as a static website:\n\n- HTML version of my resume\n- Deployed to cloud object storage (e.g. AWS S3)\n- Served globally via a CDN\n- Uses modern frontend tooling (Vite + React)\n\nThe goal is to demonstrate cloud fundamentals (networking, storage, CDN) together with basic frontend skills."
+  }
+]
