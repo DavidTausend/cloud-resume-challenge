@@ -9,29 +9,67 @@ We do this server-side because:
 - it can lead to inconsistent results or security issues if not handled carefully,
 - pre-rendered HTML is faster and easier to cache and serve from static hosting / serverless setups.
 
-The script `backend/task/render_project.py` reads `projects.json`, converts each project’s `body` (Markdown) to `body_html` (HTML), and writes the result to `frontend/src/data/projectsData.json`.  
+The script `backend/lib/render_items.py` reads `projects.json`, converts each project’s `body` (Markdown) to `body_html` (HTML), and writes the result to `frontend/src/data/projectsData.json`.  
 Later, this logic can be moved into a serverless function (e.g., AWS Lambda, Cloud Functions) if we want dynamic content.
 
+## Content Source Format (Markdown + Front Matter)
 
-## Install Python Dependencies
+Both projects and blog posts are stored as Markdown files with YAML front matter.
 
-From the project root (where backend and frontend live):
+- Projects directory: `backend/data/projects/`
+- Blog directory: `backend/data/blog/`
 
+Example project file: `backend/data/projects/cruddur.md`
+
+## Cruddur Microblogging App
+
+Cruddur is a microblogging application built as part of the ExamPro bootcamp.
+
+- Implements a REST API with FastAPI  
+- Uses PostgreSQL as a backing data store  
+- Deployed on AWS with CI/CD  
+
+## Python Environment & Dependencies
+
+Because macOS + Homebrew Python is “externally managed” (PEP 668), all Python
+dependencies are installed into a local virtual environment.
+
+From the project root (cloud-resume-challenge):
+
+### Create a virtual env
 ```sh
-cd backend
-pip install -r requirements.txt
-cd ..
+python3 -m venv .venv
 ```
-This installs:
-- markdown – used to convert Markdown to HTML
-- any additional dependencies listed in requirements.txt
 
+### Activate or reactivate the virtual en
+```sh
+source .venv/bin/activate
+```
+
+### Install backend dependencies
+```sh
+python -m pip install --upgrade pip
+python -m pip install -r backend/requirements.txt
+```
 ## Run the Markdown Renderer
 
 From the project root:
 
 ```sh
-python backend/task/render_project.py
+python backend/task/render_items.py
+```
+Depending on how render_items.py is configured, this will render one or more
+folders (e.g. projects, blog) into JSON under frontend/src/data/.
+
+## Tasks runner with invoke
+
+I am using the task runner invoke and refactor the render_projects into render_items
+so it can render the projects and tbe blog.
+
+```sh
+invoke --list
+invoke render-blog
+invoke render-projects
 ```
 
 ## Troubleshooting
