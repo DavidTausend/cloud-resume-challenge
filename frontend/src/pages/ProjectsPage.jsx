@@ -1,10 +1,13 @@
 import React, { useEffect } from "react";
 import "css/pages/projects.css";
-import projectsData from "data/projectsData.json";
+import rawProjectsData from "data/projectsData.json";
 import ProjectItem from "comps/ProjectItem";
 
+const projects = Array.isArray(rawProjectsData)
+  ? rawProjectsData
+  : rawProjectsData.projects || [];
+
 export default function ProjectsPage() {
-  // Set browser tab title when this page is active
   useEffect(() => {
     document.title = "Projekte – David Tausend";
   }, []);
@@ -19,11 +22,11 @@ export default function ProjectsPage() {
         </p>
       </header>
 
-      {projectsData.length === 0 ? (
+      {projects.length === 0 ? (
         <p>Es sind derzeit noch keine Projekte hinterlegt.</p>
       ) : (
         <div className="projects">
-          {projectsData.map((project) => (
+          {projects.map((project) => (
             <ProjectItem key={project.handle} project={project} />
           ))}
         </div>

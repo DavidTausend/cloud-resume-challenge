@@ -1,0 +1,22 @@
+.post-page__header {
+    margin-bottom: 16px;
+}
+
+.post-page__header h1 {
+    margin: 0 0 4px;
+}
+
+.post-page__meta {
+    margin: 0;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.post-body {
+    font-size: 0.95rem;
+}
+
+.post-page__back {
+    margin-top: 24px;
+    font-size: 0.9rem;
+}

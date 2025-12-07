@@ -12,8 +12,9 @@ export default function Layout() {
     let pageName = "page";
 
     if (path === "/") pageName = "home";
-    else if (path === "/resume") pageName = "resume";
+    else if (path.startsWith("/resume")) pageName = "resume";
     else if (path.startsWith("/projects")) pageName = "projects";
+    else if (path.startsWith("/blog")) pageName = "blog";
 
     document.body.dataset.page = pageName;
   }, [location]);

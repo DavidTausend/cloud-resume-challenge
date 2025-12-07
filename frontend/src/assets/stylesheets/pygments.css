@@ -1,0 +1,17 @@
+.markdown-body pre code,
+.markdown-body code {
+    color: #24292e;
+}
+
+.markdown-body .k {
+    font-weight: 600;
+}
+
+.markdown-body .s {
+    color: #032f62;
+}
+
+.markdown-body .c {
+    color: #6a737d;
+    font-style: italic;
+}

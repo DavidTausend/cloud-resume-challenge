@@ -61,6 +61,16 @@ article {
   border-radius: 6px;
 }
 
+
+h1.fancy {
+  text-align: center;
+  font-family: "Rubik Distressed", system-ui;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 60px;
+  line-height: 1em;
+}
+
 h1,
 h2,
 h3 {

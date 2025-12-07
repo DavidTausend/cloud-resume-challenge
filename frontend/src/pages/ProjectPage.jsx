@@ -1,15 +1,18 @@
 import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
+import rawProjectsData from "data/projectsData.json";
 import "css/pages/projects.css";
-import projectsData from "data/projectsData.json";
 import ProjectItem from "comps/ProjectItem";
+
+const projects = Array.isArray(rawProjectsData)
+  ? rawProjectsData
+  : rawProjectsData.projects || [];
 
 export default function ProjectPage() {
   const { handle } = useParams();
-  const project = projectsData.find((p) => p.handle === handle);
+  const project = projects.find((p) => p.handle === handle);
 
-  // Dynamic page title
   useEffect(() => {
     if (project?.title) {
       document.title = `${project.title} – Projekte – David Tausend`;
@@ -18,7 +21,6 @@ export default function ProjectPage() {
     }
   }, [project]);
 
-  // Handle invalid /projects/:handle
   if (!project) {
     return (
       <div className="project-page">
@@ -28,7 +30,6 @@ export default function ProjectPage() {
             Für den Handle <code>{handle}</code> wurde kein Projekt gefunden.
           </p>
         </header>
-
         <p className="project-page__back">
           <Link to="/projects">← Zurück zur Projektübersicht</Link>
         </p>
@@ -45,7 +46,6 @@ export default function ProjectPage() {
         )}
       </header>
 
-      {/* Reuse the card component for consistent look */}
       <ProjectItem project={project} />
 
       <p className="project-page__back">
