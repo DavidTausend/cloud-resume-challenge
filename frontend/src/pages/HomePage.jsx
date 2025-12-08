@@ -5,6 +5,7 @@ import "css/pages/home.css";
 import rawBlogData from "data/blogData.json";
 import david_tausend from "../assets/images/david-tausend.webp";
 import linkData from "data/linkData.json";
+import ViewCounter from "comps/ViewCounter";
 
 const posts = Array.isArray(rawBlogData)
   ? rawBlogData
@@ -64,6 +65,8 @@ export default function HomePage() {
                 {post.date && (
                   <p className="post-list-date">{post.date}</p>
                 )}
+                
+                <ViewCounter slug={post.handle} />
               </article>
             ))}
           </div>

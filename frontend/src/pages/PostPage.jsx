@@ -6,6 +6,8 @@ import "css/pages/post.css";
 import "css/markdown.css";
 import "css/pygments.css";
 
+import ViewCounter from "comps/ViewCounter";
+
 const posts = Array.isArray(rawBlogData)
   ? rawBlogData
   : rawBlogData.posts || [];
@@ -42,7 +44,10 @@ export default function PostPage() {
     <div className="post-page">
       <header className="post-page__header">
         <h1>{post.name}</h1>
+
         {post.date && <p className="post-page__meta">{post.date}</p>}
+
+        <ViewCounter slug={post.handle} />
       </header>
 
       <section

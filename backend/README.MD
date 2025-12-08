@@ -72,6 +72,15 @@ invoke render-blog
 invoke render-projects
 ```
 
+## Pygments
+
+For syntax highlighting in our rendered Markdown, we need to generate a CSS file.
+
+```bash
+pip install Pygments
+pygmentize -S monokai -f html -a .codehilite > pygments.css
+```
+
 ## Troubleshooting
 
 - FileNotFoundError for projects.json
