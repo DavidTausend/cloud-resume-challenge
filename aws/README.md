@@ -72,3 +72,13 @@ You only see the secret key once. Immediately:
 aws_access_key_id: YOUR_ACCESS_KEY_ID
 aws_secret_access_key: YOUR_SECRET_ACCESS_KEY
 ```
+
+## Install Deps for Ansible
+
+```sh
+ansible-galaxy collection install -r requirements.txt
+```
+
+## Install cfn-lint
+
+pipx install cfn-lint
