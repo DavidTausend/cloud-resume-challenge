@@ -32,6 +32,12 @@ Resources:
         AllowOrigins: ['*']
         AllowHeaders: ['*']
         AllowMethods: ['GET', 'POST', 'OPTIONS']
+      Domain:
+        DomainName: api-counter.davidtausendresume.com
+        CertificateArn: arn:aws:acm:eu-central-1:517392055929:certificate/90adbb74-6360-4903-9e8a-a53bcedf976e
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: Z06283332HJKQ2EI8ZM4S
 
   CounterTable:
     Type: AWS::DynamoDB::Table
@@ -51,7 +57,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
-      Handler: app.lambda_handler
+      Handler: function.lambda_handler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref CounterTable
