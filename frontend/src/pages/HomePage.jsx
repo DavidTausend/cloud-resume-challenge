@@ -44,6 +44,7 @@ export default function HomePage() {
         <header className="home-header">
           <h1>Blog</h1>
           <p>Notizen zu Cloud, DevOps und Lernen mit GenAI.</p>
+          <ViewCounter slug="home" increment />
         </header>
 
         {posts.length === 0 ? (
@@ -65,8 +66,6 @@ export default function HomePage() {
                 {post.date && (
                   <p className="post-list-date">{post.date}</p>
                 )}
-                
-                <ViewCounter slug={post.handle} />
               </article>
             ))}
           </div>

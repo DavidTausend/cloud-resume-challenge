@@ -29,9 +29,19 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
-        AllowOrigins: ['*']
-        AllowHeaders: ['*']
-        AllowMethods: ['GET', 'POST', 'OPTIONS']
+        AllowOrigins:
+          - https://davidtausendresume.com
+          - https://www.davidtausendresume.com
+        AllowHeaders:
+          - '*'
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+      DisableExecuteApiEndpoint: true
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 5
+        ThrottlingRateLimit: 10
       Domain:
         DomainName: api-counter.davidtausendresume.com
         CertificateArn: arn:aws:acm:eu-central-1:517392055929:certificate/90adbb74-6360-4903-9e8a-a53bcedf976e

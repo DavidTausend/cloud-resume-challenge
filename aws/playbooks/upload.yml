@@ -10,7 +10,7 @@
     project_root: "{{ playbook_dir | realpath }}/../.."
     frontend_dir: "{{ project_root }}/frontend"
     build_dir: "{{ frontend_dir }}/dist"
-    cloudfront_distribution_id: EMXT17BXVMUNZ
+    cloudfront_distribution_id: E365ALBAGOO9BC
   tasks:
     - name: Install Node dependencies (clean, reproducible)
       community.general.npm:
@@ -20,7 +20,7 @@
         ci: true
 
     - name: Build Vite app
-      shell: npm run build
+      shell: npm run build_aws
       args:
         chdir: "{{ frontend_dir }}"
 
