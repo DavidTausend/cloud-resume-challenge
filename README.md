@@ -20,7 +20,9 @@ img src="assets/readme/crc.webp" alt="A decorative picture featuring Cloud Resum
 - []()
 
 
-### AWS Frontend diagram
+### AWS diagram
+
+Note: It is incomplete because I used luciapp free version.
 
 
 
