@@ -4,22 +4,16 @@
   connection: local
   gather_facts: false
   collections:
-    - azure.azcollection
-  #vars_files:
-  #  - vaults/prod.yml   # keep if you store secrets (e.g., SAS/conn string) here
+    - azure.azcollection          
 
   vars:
-    # === Adjust these ===
     resource_group: cloud-resume-challenge
-    storage_account: davidtausendcrc2025crc2025              
+    storage_account: davidtausendcrc2025             
+
     container: $web                                
     project_root: "{{ playbook_dir | realpath }}/../.."
     frontend_dir: "{{ project_root }}/frontend"
     build_dir: "{{ frontend_dir }}/dist"
-
-    #cdn_resource_group: "{{ resource_group }}"
-    #cdn_profile: ""          # e.g., my-cdn-profile
-    #cdn_endpoint: ""         # e.g., my-cdn-endpoint
 
   tasks:
     - name: Install Node dependencies (clean, reproducible)
@@ -44,7 +38,6 @@
         msg: "Build dir {{ build_dir }} not found. Check build step or paths."
       when: not build_stat.stat.exists
 
-    # ---------- Upload /assets/** with long cache-control ----------
     - name: Upload /assets directory (long cache)
       azure.azcollection.azure_rm_storageblob:
         resource_group: "{{ resource_group }}"
@@ -52,12 +45,10 @@
         container: "{{ container }}"
         batch_upload_src: "{{ build_dir }}/assets"
         batch_upload_dst: "assets"
-        #overwrite: true
         cache_control: "public, max-age=31536000, immutable"
         auth_source: cli
       register: upload_assets
 
-    # ---------- Upload index.html with no-store ----------
     - name: Upload index.html (no-store)
       azure.azcollection.azure_rm_storageblob:
         resource_group: "{{ resource_group }}"
@@ -65,13 +56,11 @@
         container: "{{ container }}"
         blob: "index.html"
         src: "{{ build_dir }}/index.html"
-        #overwrite: true
         cache_control: "no-store"
         content_type: "text/html"
         auth_source: cli
       register: upload_index
 
-    # ---------- Upload remaining top-level files with short cache ----------
     - name: Find top-level files (exclude assets/ and index.html)
       ansible.builtin.find:
         paths: "{{ build_dir }}"
@@ -88,7 +77,6 @@
         container: "{{ container }}"
         blob: "{{ item.path | basename }}"
         src: "{{ item.path }}"
-        #overwrite: true
         cache_control: "public, max-age=300"
         auth_source: cli
       loop: "{{ top_level_files.files }}"

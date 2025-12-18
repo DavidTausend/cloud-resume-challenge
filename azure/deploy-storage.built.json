@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "14865645982181762712"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region for the storage account."
+      }
+    },
+    "storage_account_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account name (3–24 characters, lowercase letters and digits only)."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-01-01",
+      "name": "[parameters('storage_account_name')]",
+      "location": "[parameters('location')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "minimumTlsVersion": "TLS1_2",
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": true
+      }
+    }
+  ],
+  "outputs": {
+    "primaryWebEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "Primary web endpoint (available after static website is enabled)"
+      },
+      "value": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storage_account_name')), '2023-01-01').primaryEndpoints.web]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account name"
+      },
+      "value": "[parameters('storage_account_name')]"
+    }
+  }
+}
