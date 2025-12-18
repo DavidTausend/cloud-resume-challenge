@@ -9,6 +9,7 @@
     location_global: global
     storage_account_name: davidtausendcrc2025
     domain_fqdn: "www.davidtausendresume.net"
+    apex_fqdn: "davidtausendresume.net"
     dns_zone_name: "davidtausendresume.net"
     dns_zone_rg: "cloud-resume-challenge"
 
@@ -54,6 +55,7 @@
                     domain_fqdn={{ domain_fqdn }}
                     dns_zone_name={{ dns_zone_name }}
                     dns_zone_rg={{ dns_zone_rg }}
+                    apex_fqdn={{ apex_fqdn }}
         --output json
       changed_when: false
 
@@ -67,6 +69,7 @@
                     domain_fqdn={{ domain_fqdn }}
                     dns_zone_name={{ dns_zone_name }}
                     dns_zone_rg={{ dns_zone_rg }}
+                    apex_fqdn={{ apex_fqdn }}
         --output json
       register: afd_deploy
       changed_when: afd_deploy.rc == 0

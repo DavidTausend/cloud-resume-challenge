@@ -8,6 +8,9 @@ param origin_hostname string
 @description('Custom domain served by Front Door (use a subdomain, e.g., www.andrewbrownresume.net)')
 param domain_fqdn string
 
+@description('Apex/root domain (no www)')
+param apex_fqdn string
+
 @description('Azure DNS zone name (e.g., andrewbrownresume.net)')
 param dns_zone_name string
 
@@ -78,6 +81,19 @@ resource customDomain 'Microsoft.Cdn/profiles/customDomains@2025-06-01' = {
   }
 }
 
+resource apexDomain 'Microsoft.Cdn/profiles/customDomains@2025-06-01' = {
+  name: 'cd-apex-${uniqueString(apex_fqdn)}'
+  parent: fd
+  properties: {
+    hostName: apex_fqdn
+    azureDnsZone: { id: dnsZone.id }
+    tlsSettings: {
+      certificateType: 'ManagedCertificate'
+      minimumTlsVersion: 'TLS12'
+    }
+  }
+}
+
 resource route 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-04-15' = {
   name: 'route-static'
   parent: fdEndpoint
@@ -93,4 +109,48 @@ resource route 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-04-15' = {
   }
 }
 
-output afd_endpoint string = fdEndpoint.properties.hostName
+resource routeApexRedirect 'Microsoft.Cdn/profiles/afdEndpoints/routes@2025-04-15' = {
+  name: 'route-apex-redirect'
+  parent: fdEndpoint
+  properties: {
+    originGroup: { id: og.id }
+    customDomains: [ { id: apexDomain.id } ]
+    patternsToMatch: [ '/*' ]
+    supportedProtocols: [ 'Http', 'Https' ]
+    linkToDefaultDomain: 'Disabled'
+    enabledState: 'Enabled'
+    ruleSets: [ { id: rsApex.id } ]
+
+    forwardingProtocol: 'MatchRequest'
+  }
+}
+
+resource rsApex 'Microsoft.Cdn/profiles/ruleSets@2025-04-15' = {
+  name: 'rsApexRedirect'
+  parent: fd
+}
+
+resource rsApexRule 'Microsoft.Cdn/profiles/ruleSets/rules@2025-04-15' = {
+  name: 'redirectToWww'
+  parent: rsApex
+  properties: {
+    order: 1
+    actions: [
+      {
+        name: 'UrlRedirect'
+        parameters: {
+          redirectType: 'Moved'
+          destinationProtocol: 'Https'
+          customHostname: domain_fqdn
+          typeName: 'DeliveryRuleUrlRedirectActionParameters'
+        }
+      }
+    ]
+  }
+}
+
+output afd_profile_name   string = fd.name
+output afd_profile_id     string = fd.id
+output afd_endpoint_name  string = fdEndpoint.name
+output afd_endpoint_id    string = fdEndpoint.id
+output afd_endpoint_host  string = fdEndpoint.properties.hostName
