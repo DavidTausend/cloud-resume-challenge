@@ -69,3 +69,56 @@ In AWS, an S3 bucket is clearly managed using Infrastructure as Code. In Azure, 
 During testing, Azure Bicep did not remove a previously renamed container, which suggests that containers behave more like data objects than strict infrastructure resources. This behavior indicates that container lifecycle management may be better handled through configuration management tools such as Ansible rather than Bicep.
 
 Based on these observations, Azure Bicep is used to manage Storage Accounts, while Ansible is used to manage blob containers and uploaded objects. This separation helps avoid state drift and aligns container handling more closely with application-level configuration.
+
+
+## Azure Functions – Required Tools and Providers
+
+Azure Functions require the Azure Functions Core Tools to be installed locally in order to run and test functions.
+
+## Register Required Azure Resource Providers
+
+Before creating or deploying Azure Functions, ensure the required resource providers are registered in your subscription.
+
+```sh
+az provider register --namespace Microsoft.ManagedIdentity
+az provider register --namespace Microsoft.Web
+az provider register --namespace Microsoft.Storage
+az provider register --namespace Microsoft.OperationalInsights
+az provider register --namespace Microsoft.Insights
+```
+
+Check the registration status and wait until each provider reports Registered:
+
+```sh
+az provider show --namespace Microsoft.ManagedIdentity --query "registrationState" -o tsv
+az provider show --namespace Microsoft.Web --query "registrationState" -o tsv
+az provider show --namespace Microsoft.Storage --query "registrationState" -o tsv
+az provider show --namespace Microsoft.OperationalInsights --query "registrationState" -o tsv
+az provider show --namespace Microsoft.Insights --query "registrationState" -o tsv
+```
+
+## Install Azure Functions Core Tools (macOS)
+
+Azure Functions Core Tools are required to run func commands locally.
+
+```sh
+brew tap azure/functions
+brew install azure-functions-core-tools@4
+```
+
+Verify the installation:
+
+```sh
+func --version
+```
+
+## Local Testing of Python Azure Functions
+
+Activate the virtual environment, install dependencies, and start the local Azure Functions host.
+
+```sh
+cd backend-counter
+source .venv/bin/activate
+pip install -r requirements.txt
+func start
+```
