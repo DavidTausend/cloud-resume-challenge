@@ -1,18 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-/**
- * Accept either:
- *  - VITE_VIEW_COUNTER_URL=https://api-counter.example.com/counter
- *  - VITE_COUNTER_ENDPOINT=https://api-counter.example.com
- */
 const RAW =
-  import.meta.env.VITE_VIEW_COUNTER_URL ||
-  import.meta.env.VITE_COUNTER_ENDPOINT;
+  import.meta.env.VITE_COUNTER_ENDPOINT ||
+  import.meta.env.VITE_VIEW_COUNTER_URL;
 
 function normalize(url) {
   if (!url) return null;
   const clean = url.replace(/\/$/, "");
-  return clean.endsWith("/counter") ? clean : `${clean}/counter`;
+
+  if (clean.endsWith("/counter")) return clean;
+
+  if (clean.endsWith("/api")) return `${clean}/counter`;
+
+  return `${clean}/api/counter`;
 }
 
 export default function ViewCounter({ increment = false }) {
@@ -23,25 +23,23 @@ export default function ViewCounter({ increment = false }) {
   useEffect(() => {
     if (!API_URL) return;
 
-    const method = increment && !hasIncremented.current ? "POST" : "GET";
+    const shouldPost = increment && !hasIncremented.current;
+    const method = shouldPost ? "POST" : "GET";
 
     (async () => {
       try {
         const res = await fetch(API_URL, {
           method,
-          headers: { "Content-Type": "application/json" },
+          mode: "cors",
+          ...(shouldPost ? { headers: { "Content-Type": "application/json" } } : {}),
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
-        setCount(Number(data.count ?? 0));
+        setCount(Number(data?.count ?? 0));
 
-        if (method === "POST") {
-          hasIncremented.current = true;
-        }
+        if (shouldPost) hasIncremented.current = true;
       } catch (err) {
         console.error("ViewCounter error:", err);
         setCount(null);
@@ -53,9 +51,7 @@ export default function ViewCounter({ increment = false }) {
 
   return (
     <div className="view-counter">
-      <span className="view-counter-count">
-        {count === null ? "–" : count}
-      </span>
+      <span className="view-counter-count">{count === null ? "–" : count}</span>
       <span className="view-counter-label">Views</span>
     </div>
   );

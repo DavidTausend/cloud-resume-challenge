@@ -122,3 +122,48 @@ source .venv/bin/activate
 pip install -r requirements.txt
 func start
 ```
+
+## Problems and Troubleshooting
+
+### Azure Resource Provider Not Registered
+
+While deploying Azure Functions, deployments may fail with errors such as:
+
+```sh
+The subscription is not registered to use namespace 'Microsoft.ManagedIdentity'
+The subscription is not registered to use namespace 'Microsoft.Web'
+```
+
+These errors indicate that required Azure resource providers are not registered. Register the missing providers using az provider register and wait until the registration state changes to Registered.
+
+### Azure Functions CORS Preflight Failures
+
+If browser requests fail with CORS errors such as:
+
+```sh
+Redirect is not allowed for a preflight request
+```
+
+This typically indicates that the request is being redirected (for example by a CDN or static website endpoint) before reaching the Azure Function.
+
+To resolve this:
+- Ensure the frontend calls the Function App directly, not via the static website origin.
+- Confirm that the Function App CORS settings include the exact frontend origin (no trailing slashes).
+- Avoid routing /api/* through static storage or CDN rules that return HTML.
+
+### Storage Account Name Mismatch in Validators
+
+Automated validators may require an exact storage account name. Even a single character difference will cause validation to fail.
+
+Azure Storage Accounts cannot be renamed. If the validator expects a specific name, the storage account must be deleted and recreated with the exact expected name.
+
+## Edit Vault
+
+We store our configuration in an Ansible Vault file. This is optional, but we use it for learning purposes and to keep configuration (including non-sensitive values) in one place.
+
+```sh
+cd aws
+ansible-vault create playbooks/vaults/prod.yml
+ansible-vault edit playbooks/vaults/prod.yml
+ansible-vault view playbooks/vaults/prod.yml
+```
