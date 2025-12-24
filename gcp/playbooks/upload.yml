@@ -1,0 +1,70 @@
+---
+- name: Build Vite App and Upload to GCS (ADC, no JSON key)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - vaults/prod.yml
+
+  vars:
+    gcp_project: "{{ gcp_project_id | default('cloud-resume-challenge-481614') }}"
+    # Don't reference gcs_bucket inside its own definition
+    gcs_bucket: "{{ gcp_bucket_name | default('davidtausendresume.org') }}"
+
+    project_root: "{{ (playbook_dir ~ '/../..') | realpath }}"
+    frontend_dir: "{{ project_root }}/frontend"
+    build_dir: "{{ frontend_dir }}/dist"
+
+  tasks:
+    - name: Verify ADC is available (run gcloud auth application-default login)
+      ansible.builtin.command: gcloud auth application-default print-access-token
+      register: adc_token
+      changed_when: false
+      environment:
+        GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
+
+    - name: Ensure gcloud CLI installed
+      ansible.builtin.command: gcloud version
+      changed_when: false
+
+    - name: Install Node dependencies (reproducible)
+      community.general.npm:
+        path: "{{ frontend_dir }}"
+        state: present
+        production: false
+        ci: true
+
+    - name: Build Vite app
+      ansible.builtin.command: npm run build
+      args:
+        chdir: "{{ frontend_dir }}"
+
+    - name: Confirm build dir exists
+      ansible.builtin.stat:
+        path: "{{ build_dir }}"
+      register: build_stat
+
+    - name: Fail if build output missing
+      ansible.builtin.fail:
+        msg: "Build dir {{ build_dir }} not found. Check build step or paths."
+      when: not build_stat.stat.exists
+
+    - name: Sync build output to GCS (delete removed files)
+      ansible.builtin.command: >
+        gcloud storage rsync
+        --recursive
+        --delete-unmatched-destination-objects
+        "{{ build_dir }}"
+        "gs://{{ gcs_bucket }}/"
+      register: rsync_out
+      changed_when: rsync_out.rc == 0
+      environment:
+        CLOUDSDK_CORE_PROJECT: "{{ gcp_project }}"
+        # Force gcloud to use the ADC token (avoids "no valid credentials" for active account)
+        CLOUDSDK_AUTH_ACCESS_TOKEN: "{{ adc_token.stdout }}"
+        GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
+
+    - name: Show rsync output
+      ansible.builtin.debug:
+        var: rsync_out.stdout
