@@ -1,9 +1,18 @@
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 7.0"
+    }
+  }
+}
+
 provider "google" {
   project = "cloud-resume-challenge-481614"
   region  = "europe-west3"
 }
 
-resource "google_storage_bucket" "static-site" {
+resource "google_storage_bucket" "static_site" {
   name          = var.bucket_name
   location      = "europe-west3"
   force_destroy = true
@@ -14,4 +23,13 @@ resource "google_storage_bucket" "static-site" {
     main_page_suffix = "index.html"
     not_found_page   = "404.html"
   }
+}
+
+resource "google_storage_bucket_iam_binding" "public_access" {
+  bucket = google_storage_bucket.static_site.name
+  role   = "roles/storage.objectViewer"
+
+  members = [
+    "allUsers",
+  ]
 }
