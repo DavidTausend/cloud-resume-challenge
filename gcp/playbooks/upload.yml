@@ -9,7 +9,6 @@
 
   vars:
     gcp_project: "{{ gcp_project_id | default('cloud-resume-challenge-481614') }}"
-    # Don't reference gcs_bucket inside its own definition
     gcs_bucket: "{{ gcp_bucket_name | default('davidtausendresume.org') }}"
 
     project_root: "{{ (playbook_dir ~ '/../..') | realpath }}"
@@ -61,7 +60,6 @@
       changed_when: rsync_out.rc == 0
       environment:
         CLOUDSDK_CORE_PROJECT: "{{ gcp_project }}"
-        # Force gcloud to use the ADC token (avoids "no valid credentials" for active account)
         CLOUDSDK_AUTH_ACCESS_TOKEN: "{{ adc_token.stdout }}"
         GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
 

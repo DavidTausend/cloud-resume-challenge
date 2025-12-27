@@ -1,5 +1,5 @@
 ---
-- name: Destroy GCS static site bucket via Terraform (ADC, GCP only)
+- name: Destroy GCS static site bucket via Terraform (ADC + Terraform Cloud)
   hosts: localhost
   connection: local
   gather_facts: false
@@ -12,14 +12,14 @@
     tf_vars_file: "{{ project_path }}/terraform.tfvars"
 
   tasks:
-    - name: Verify ADC is available (run gcloud auth application-default login)
+    - name: "Verify ADC is available (run: gcloud auth application-default login)"
       ansible.builtin.command: gcloud auth application-default print-access-token
       register: adc_token
       changed_when: false
       environment:
         GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
 
-    - name: Terraform init and destroy (ADC, local state)
+    - name: Terraform init and destroy (Terraform Cloud)
       community.general.terraform:
         project_path: "{{ project_path }}"
         force_init: true
@@ -32,6 +32,7 @@
         GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
         GOOGLE_OAUTH_ACCESS_TOKEN: "{{ adc_token.stdout }}"
         TF_VAR_bucket_name: "{{ omit }}"
+        TF_TOKEN_app_terraform_io: "{{ tfc_token }}"
       register: tf_destroy
 
     - name: Show Terraform destroy output (if any)

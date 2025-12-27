@@ -1,5 +1,5 @@
 ---
-- name: Deploy GCS static site bucket via Terraform (ADC, no JSON key)
+- name: Deploy GCS static site bucket via Terraform (ADC + Terraform Cloud)
   hosts: localhost
   connection: local
   gather_facts: false
@@ -8,7 +8,6 @@
     - vaults/prod.yml
 
   vars:
-    # Your .tf files are in gcp/
     project_path: "{{ playbook_dir }}/.."
     tf_vars_file: "{{ project_path }}/terraform.tfvars"
 
@@ -20,7 +19,7 @@
       environment:
         GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
 
-    - name: Terraform init/plan/apply (ADC)
+    - name: Terraform init/plan/apply (Terraform Cloud)
       community.general.terraform:
         project_path: "{{ project_path }}"
         force_init: true
@@ -31,8 +30,9 @@
         GOOGLE_PROJECT: "{{ gcp_project_id }}"
         GOOGLE_REGION: "{{ gcp_region }}"
         GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
-        TF_VAR_bucket_name: "{{ omit }}"
         GOOGLE_OAUTH_ACCESS_TOKEN: "{{ adc_token.stdout }}"
+        TF_VAR_bucket_name: "{{ omit }}"
+        TF_TOKEN_app_terraform_io: "{{ tfc_token }}"
       register: tf_apply
 
     - name: Show Terraform output (if any)
