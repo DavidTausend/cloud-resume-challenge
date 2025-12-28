@@ -1,0 +1,117 @@
+---
+- name: Package and upload Cloud Functions (Gen2) Python source to GCS (ADC)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - vaults/prod.yml
+
+  vars:
+    project_path: "{{ playbook_dir }}/.."
+    gcp_project: "{{ gcp_project_id | default('cloud-resume-challenge-481614') }}"
+    region: "{{ gcp_region | default('europe-west3') }}"
+
+    # Bucket where you store function source zips
+    gcs_bucket: "{{ gcp_functions_bucket | default('crc-func-tausend') }}"
+
+    # Your function source folder is gcp/function/
+    function_src_dir: "{{ project_path }}/function"
+    dist_dir: "{{ project_path }}/.dist"
+    zip_path: "{{ dist_dir }}/function.zip"
+
+  environment:
+    CLOUDSDK_CORE_PROJECT: "{{ gcp_project }}"
+    GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
+
+  tasks:
+    - name: "Verify ADC is available (run gcloud auth application-default login)"
+      ansible.builtin.command: gcloud auth application-default print-access-token
+      register: adc_token
+      changed_when: false
+      environment:
+        GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
+
+    - name: Ensure gcloud CLI installed
+      ansible.builtin.command: gcloud version
+      changed_when: false
+
+    - name: Ensure dist directory exists
+      ansible.builtin.file:
+        path: "{{ dist_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Verify function entrypoint exists (main.py)
+      ansible.builtin.stat:
+        path: "{{ function_src_dir }}/main.py"
+      register: fn_main
+
+    - name: Fail if main.py is missing
+      ansible.builtin.fail:
+        msg: "Expected {{ function_src_dir }}/main.py to exist."
+      when: not fn_main.stat.exists
+
+    - name: Gather function source files to include
+      ansible.builtin.find:
+        paths: "{{ function_src_dir }}"
+        patterns:
+          - "main.py"
+          - "requirements.txt"
+          - "*.py"
+        file_type: file
+      register: present_files
+
+    - name: Build ZIP from present files (exclude venv + caches)
+      ansible.builtin.archive:
+        path: "{{ present_files.files | map(attribute='path') | list }}"
+        dest: "{{ zip_path }}"
+        format: zip
+        exclude_path:
+          - "{{ function_src_dir }}/.venv"
+          - "{{ function_src_dir }}/__pycache__"
+          - "{{ function_src_dir }}/.pytest_cache"
+          - "{{ function_src_dir }}/.mypy_cache"
+
+    - name: Compute SHA256 of ZIP (macOS-safe)
+      ansible.builtin.command: "shasum -a 256 {{ zip_path }}"
+      register: sha_out
+      changed_when: false
+
+    - name: Set object name from SHA256
+      ansible.builtin.set_fact:
+        zip_sha: "{{ (sha_out.stdout | regex_search('^([0-9a-fA-F]+)')) }}"
+        object_name: "function-{{ (sha_out.stdout | regex_search('^([0-9a-fA-F]+)')) }}.zip"
+
+    - name: Check if object already exists
+      ansible.builtin.command: >
+        gcloud storage objects describe gs://{{ gcs_bucket }}/{{ object_name }}
+        --format="value(name)"
+      register: obj_check
+      failed_when: false
+      changed_when: false
+
+    - name: Upload ZIP to GCS (only if missing)
+      ansible.builtin.command:
+        argv:
+          - gcloud
+          - storage
+          - cp
+          - "{{ zip_path }}"
+          - "gs://{{ gcs_bucket }}/{{ object_name }}"
+          - --no-clobber
+          - --cache-control=no-store
+      when: obj_check.rc != 0
+      register: upload_result
+      changed_when: upload_result.rc == 0
+      environment:
+        CLOUDSDK_CORE_PROJECT: "{{ gcp_project }}"
+        CLOUDSDK_AUTH_ACCESS_TOKEN: "{{ adc_token.stdout }}"
+        GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
+
+    - name: Debug location
+      ansible.builtin.debug:
+        msg:
+          - "Uploaded/exists: gs://{{ gcs_bucket }}/{{ object_name }}"
+          - "ZIP SHA256: {{ zip_sha }}"
+          - "Local ZIP: {{ zip_path }}"
