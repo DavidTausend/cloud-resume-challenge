@@ -1,22 +1,20 @@
 import os
 import json
-from functions_framework import http
 
-
-@http
 def hello_http(request):
-    # Get query parameter ?name=
-    name = request.args.get("name", "world")
+    name = request.args.get("name") if request.args else None
+    if not name:
+        try:
+            body = request.get_json(silent=True) or {}
+            name = body.get("name")
+        except Exception:
+            name = None
 
-    # Get greeting from environment variable
-    greeting = os.environ.get("GREETING", "Hello")
-
-    response_body = {
-        "message": f"{greeting}, {name}!"
-    }
+    name = name or "world"
+    greeting = os.getenv("GREETING", "Hello")
 
     return (
-        json.dumps(response_body),
+        json.dumps({"message": f"{greeting}, {name}!"}),
         200,
         {"Content-Type": "application/json"},
     )

@@ -8,7 +8,6 @@ terraform {
 
   cloud {
     organization = "DavidTausend"
-
     workspaces {
       name = "gcs-davidtausendresumeorg"
     }
@@ -16,13 +15,15 @@ terraform {
 }
 
 provider "google" {
-  project = "cloud-resume-challenge-481614"
-  region  = "var.region"
+  project = var.project_id
+  region  = var.region
 }
+
+data "google_project" "this" {}
 
 resource "google_storage_bucket" "static_site" {
   name          = var.bucket_name
-  location      = "var.region"
+  location      = var.region
   force_destroy = true
 
   uniform_bucket_level_access = true
@@ -34,10 +35,51 @@ resource "google_storage_bucket" "static_site" {
 }
 
 resource "google_storage_bucket_iam_binding" "public_access" {
-  bucket = google_storage_bucket.static_site.name
-  role   = "roles/storage.objectViewer"
-
+  bucket  = google_storage_bucket.static_site.name
+  role    = "roles/storage.objectViewer"
   members = ["allUsers"]
+}
+
+resource "google_project_service" "apis" {
+  for_each = toset([
+    "cloudfunctions.googleapis.com",
+    "run.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "eventarc.googleapis.com",
+    "logging.googleapis.com",
+    "storage.googleapis.com",
+    "iamcredentials.googleapis.com",
+  ])
+
+  service            = each.key
+  disable_on_destroy = false
+}
+
+resource "google_service_account" "fn_runtime" {
+  account_id   = "fn-viewcounter-runtime"
+  display_name = "Runtime SA for View Counter (Cloud Functions Gen2)"
+}
+
+resource "google_service_account" "fn_build" {
+  account_id   = "fn-viewcounter-build"
+  display_name = "Build SA for View Counter (Cloud Build / Functions Gen2)"
+}
+
+resource "google_project_iam_member" "fn_build_roles" {
+  for_each = toset([
+    "roles/cloudbuild.builds.editor",
+    "roles/storage.objectViewer",
+    "roles/storage.objectAdmin",
+    "roles/artifactregistry.writer",
+    "roles/logging.logWriter",
+    "roles/run.admin",
+    "roles/iam.serviceAccountUser",
+  ])
+
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.fn_build.email}"
 }
 
 resource "google_cloudfunctions2_function" "fn" {
@@ -45,9 +87,24 @@ resource "google_cloudfunctions2_function" "fn" {
   location    = var.region
   description = "CRC View Counter"
 
+  depends_on = [
+    google_project_service.apis["cloudfunctions.googleapis.com"],
+    google_project_service.apis["run.googleapis.com"],
+    google_project_service.apis["cloudbuild.googleapis.com"],
+    google_project_service.apis["eventarc.googleapis.com"],
+    google_project_service.apis["artifactregistry.googleapis.com"],
+    google_project_service.apis["storage.googleapis.com"],
+    google_project_service.apis["logging.googleapis.com"],
+    google_project_service.apis["iamcredentials.googleapis.com"],
+    google_project_iam_member.fn_build_roles,
+  ]
+
   build_config {
-    runtime     = "ruby34"           # Ruby runtime ID
-    entry_point = "hello_http"       # function name in app.rb
+    runtime     = "python311"
+    entry_point = "hello_http"
+
+    service_account = "projects/${var.project_id}/serviceAccounts/${google_service_account.fn_build.email}"
+
     source {
       storage_source {
         bucket = var.function_bucket_name
@@ -57,74 +114,31 @@ resource "google_cloudfunctions2_function" "fn" {
   }
 
   service_config {
+    service_account_email            = google_service_account.fn_runtime.email
     available_memory                 = "256M"
     timeout_seconds                  = 30
     ingress_settings                 = "ALLOW_ALL"
-    max_instance_request_concurrency = 10
+    max_instance_request_concurrency = 1
+
+    environment_variables = {
+      GREETING = "Hello"
+    }
   }
-
-  depends_on = [google_project_service.services]
 }
 
-
-resource "google_service_account" "gw_caller" {
-  account_id   = "apigw-caller"
-  display_name = "API Gateway backend caller"
-}
-
-resource "google_cloudfunctions2_function_iam_member" "invoker_for_gateway" {
+resource "google_cloudfunctions2_function_iam_member" "public_invoker" {
   location       = var.region
   cloud_function = google_cloudfunctions2_function.fn.name
   role           = "roles/cloudfunctions.invoker"
-  member         = "serviceAccount:${google_service_account.gw_caller.email}"
+  member         = "allUsers"
+
+  depends_on = [google_cloudfunctions2_function.fn]
 }
 
-resource "google_api_gateway_api" "api" {
-  api_id = var.api_id
+output "function_url" {
+  value = google_cloudfunctions2_function.fn.url
 }
 
-locals {
-  backend_url = google_cloudfunctions2_function.fn.url
-}
-
-resource "google_api_gateway_api_config" "api_cfg" {
-  api                  = google_api_gateway_api.api.api_id
-  api_config_id_prefix = "${var.api_id}-cfg"
-
-  # Pass the rendered OpenAPI as base64
-  openapi_documents {
-    document {
-      path     = "openapi.yaml"
-      contents = base64encode(templatefile("${path.module}/openapi.yaml.tmpl", {
-        TITLE        = var.api_title
-        BACKEND_URL  = local.backend_url
-        AUDIENCE     = local.backend_url
-      }))
-    }
-  }
-  # Tell the gateway which SA to use to sign ID tokens for the backend
-  gateway_config {
-    backend_config {
-      google_service_account = google_service_account.gw_caller.email
-    }
-  }
-
-  depends_on = [
-    google_cloudfunctions2_function.fn,
-    google_cloudfunctions2_function_iam_member.invoker_for_gateway
-  ]
-}
-
-resource "google_api_gateway_gateway" "gw" {
-  gateway_id = var.gateway_id
-  api_config = google_api_gateway_api_config.api_cfg.id
-  region     = var.region
-}
-
-output "curl_through_gateway" {
-  value = "curl https://${google_api_gateway_gateway.gw.default_hostname}/v1/hello"
-}
-
-output "gateway_default_hostname" {
-  value = google_api_gateway_gateway.gw.default_hostname
+output "curl_function" {
+  value = "curl '${google_cloudfunctions2_function.fn.url}?name=David'"
 }

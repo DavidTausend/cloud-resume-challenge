@@ -12,10 +12,8 @@
     gcp_project: "{{ gcp_project_id | default('cloud-resume-challenge-481614') }}"
     region: "{{ gcp_region | default('europe-west3') }}"
 
-    # Bucket where you store function source zips
     gcs_bucket: "{{ gcp_functions_bucket | default('crc-func-tausend') }}"
 
-    # Your function source folder is gcp/function/
     function_src_dir: "{{ project_path }}/function"
     dist_dir: "{{ project_path }}/.dist"
     zip_path: "{{ dist_dir }}/function.zip"

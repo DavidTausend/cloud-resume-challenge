@@ -1,5 +1,5 @@
 ---
-- name: Deploy GCS static site bucket via Terraform (ADC + Terraform Cloud)
+- name: Deploy infra via Terraform Cloud (single workspace configured in main.tf)
   hosts: localhost
   connection: local
   gather_facts: false
@@ -12,29 +12,38 @@
     tf_vars_file: "{{ project_path }}/terraform.tfvars"
 
   tasks:
-    - name: "Verify ADC is available (run: gcloud auth application-default login)"
-      ansible.builtin.command: gcloud auth application-default print-access-token
-      register: adc_token
+    - name: Terraform init (unset TF_WORKSPACE)
+      ansible.builtin.command:
+        argv:
+          - env
+          - -u
+          - TF_WORKSPACE
+          - terraform
+          - init
+          - -input=false
+          - -no-color
+      args:
+        chdir: "{{ project_path }}"
+      register: tf_init
       changed_when: false
-      environment:
-        GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
 
-    - name: Terraform init/plan/apply (Terraform Cloud)
-      community.general.terraform:
-        project_path: "{{ project_path }}"
-        force_init: true
-        state: present
-        variables_files:
-          - "{{ tf_vars_file }}"
-      environment:
-        GOOGLE_PROJECT: "{{ gcp_project_id }}"
-        GOOGLE_REGION: "{{ gcp_region }}"
-        GOOGLE_APPLICATION_CREDENTIALS: "{{ omit }}"
-        GOOGLE_OAUTH_ACCESS_TOKEN: "{{ adc_token.stdout }}"
-        TF_VAR_bucket_name: "{{ omit }}"
-        TF_TOKEN_app_terraform_io: "{{ tfc_token }}"
+    - name: Terraform apply (unset TF_WORKSPACE)
+      ansible.builtin.command:
+        argv:
+          - env
+          - -u
+          - TF_WORKSPACE
+          - terraform
+          - apply
+          - -auto-approve
+          - -input=false
+          - -no-color
+          - -var-file={{ tf_vars_file }}
+      args:
+        chdir: "{{ project_path }}"
       register: tf_apply
+      changed_when: true
 
-    - name: Show Terraform output (if any)
+    - name: Show terraform output
       ansible.builtin.debug:
-        var: tf_apply
+        var: tf_apply.stdout

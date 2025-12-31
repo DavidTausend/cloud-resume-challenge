@@ -11,7 +11,7 @@ Verify installation:
 terraform version
 ```
 
-### Terraform & GCP Authentication
+### Terraform & GCP Authentication (ADC)
 
 Terraform does not require service account JSON keys when using Application Default Credentials (ADC).
 
@@ -80,3 +80,68 @@ gcloud auth application-default print-access-token
 ``` 
 
 If the second command prints a token, so the authentication is correct.
+
+## Terraform Cloud Setup
+
+### Terraform Cloud Token
+
+Terraform Cloud requires an API token.
+
+Create one at: Terraform Cloud → User Settings → Tokens
+
+Export it locally:
+
+```sh
+export TF_TOKEN_app_terraform_io=xxxxxxxxxxxxxxxx
+```
+
+Terraform automatically picks this up during terraform init/apply.
+
+## Terraform Workspaces
+
+This project uses a single fixed workspace, defined in main.tf:
+
+```sh
+terraform {
+  cloud {
+    organization = "DavidTausend"
+    workspaces {
+      name = "gcs-davidtausendresumeorg"
+    }
+  }
+}
+```
+
+Important ⚠️
+	•	Never set TF_WORKSPACE manually
+	•	Ansible explicitly unsets it to avoid Terraform Cloud conflicts
+	•	If TF_WORKSPACE is set, Terraform will fail with confusing errors
+
+This is why the Ansible task runs Terraform as:
+
+```sh
+env -u TF_WORKSPACE terraform apply ...
+```
+
+## Packaging the Cloud Function
+
+Before deploying, the function must be packaged and uploaded to GCS.
+
+Typical flow:
+```sh
+cd function
+zip -r function.zip main.py requirements.txt
+gsutil cp function.zip gs://crc-func-tausend/
+```
+The object name must match:
+```sh
+function_object_name = "function.zip"
+```
+
+## Testing the function Locally
+
+Test our function before we package it.
+
+```sh
+bundle exec functions-framework --target hello_http --port 8080
+```
