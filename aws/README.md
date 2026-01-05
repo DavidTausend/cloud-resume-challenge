@@ -50,7 +50,7 @@ dedicated IAM user just for deployments.
 High-level steps in the AWS console:
 	1.	Go to IAM → Users → Add users.
 	2.	Give the user a name, e.g. cloud-resume-deployer.
-	3.	Select Access key – Programmatic access.
+	3.	Select Access key → Programmatic access.
 	4.	Attach a policy with the minimum permissions, for example:
 	    •	AmazonS3FullAccess (or a custom S3 policy for your bucket),
 	    •	CloudFormationFullAccess (or a restricted stack-specific policy).
@@ -58,6 +58,9 @@ High-level steps in the AWS console:
 
 Store these credentials in the Ansible vault (prod.yml) so they are not committed in
 plain text.
+
+<img src="assets/readme/aws_user_machine.webp" alt="Create user machine">
+
 
 ## Create Access Keys for the User
 
