@@ -1,22 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-const RAW =
-  import.meta.env.VITE_COUNTER_ENDPOINT ||
-  import.meta.env.VITE_VIEW_COUNTER_URL;
-
-function normalize(url) {
-  if (!url) return null;
-  const clean = url.replace(/\/$/, "");
-
-  if (clean.endsWith("/counter")) return clean;
-
-  if (clean.endsWith("/api")) return `${clean}/counter`;
-
-  return `${clean}/api/counter`;
-}
+const API_URL =
+  import.meta.env.VITE_COUNTER_ENDPOINT;
 
 export default function ViewCounter({ increment = false }) {
-  const API_URL = useMemo(() => normalize(RAW), []);
   const [count, setCount] = useState(null);
   const hasIncremented = useRef(false);
 
@@ -31,7 +18,6 @@ export default function ViewCounter({ increment = false }) {
         const res = await fetch(API_URL, {
           method,
           mode: "cors",
-          ...(shouldPost ? { headers: { "Content-Type": "application/json" } } : {}),
         });
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -45,13 +31,15 @@ export default function ViewCounter({ increment = false }) {
         setCount(null);
       }
     })();
-  }, [API_URL, increment]);
+  }, [increment]);
 
   if (!API_URL) return null;
 
   return (
     <div className="view-counter">
-      <span className="view-counter-count">{count === null ? "–" : count}</span>
+      <span className="view-counter-count">
+        {count === null ? "–" : count}
+      </span>
       <span className="view-counter-label">Views</span>
     </div>
   );

@@ -16,7 +16,7 @@ For the first version of the Cloud Resume Challenge we use CloudFormation becaus
 Install Ansible and the AWS collection:
 ```sh
 brew install ansible
-brew install --include-deps ansible  # only needed if Homebrew warns about deps
+brew install --include-deps ansible
 ansible-galaxy collection install amazon.aws
 ```
 

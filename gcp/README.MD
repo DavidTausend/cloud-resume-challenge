@@ -145,3 +145,9 @@ Test our function before we package it.
 ```sh
 bundle exec functions-framework --target hello_http --port 8080
 ```
+
+## Common Failure Causes
+
+The most common cause of failure is a leftover .env.local file or an exported shell variable overriding .env.gcp. Another frequent issue is relying on JavaScript fallbacks that silently mask misconfiguration. Tunnel URLs must never be committed or used in production builds.
+
+Cloudflare caching is not the root cause when asset filenames are hashed, because each deployment produces new filenames.

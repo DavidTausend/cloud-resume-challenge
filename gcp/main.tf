@@ -50,6 +50,7 @@ resource "google_project_service" "apis" {
     "logging.googleapis.com",
     "storage.googleapis.com",
     "iamcredentials.googleapis.com",
+    "firestore.googleapis.com",
   ])
 
   service            = each.key
@@ -88,14 +89,7 @@ resource "google_cloudfunctions2_function" "fn" {
   description = "CRC View Counter"
 
   depends_on = [
-    google_project_service.apis["cloudfunctions.googleapis.com"],
-    google_project_service.apis["run.googleapis.com"],
-    google_project_service.apis["cloudbuild.googleapis.com"],
-    google_project_service.apis["eventarc.googleapis.com"],
-    google_project_service.apis["artifactregistry.googleapis.com"],
-    google_project_service.apis["storage.googleapis.com"],
-    google_project_service.apis["logging.googleapis.com"],
-    google_project_service.apis["iamcredentials.googleapis.com"],
+    google_project_service.apis,
     google_project_iam_member.fn_build_roles,
   ]
 
@@ -121,18 +115,49 @@ resource "google_cloudfunctions2_function" "fn" {
     max_instance_request_concurrency = 1
 
     environment_variables = {
-      GREETING = "Hello"
+      COLLECTION_NAME      = "counter"
+      COUNTER_PK           = "global"
+      CORS_ALLOWED_ORIGINS = "*"
+      CORS_ALLOW_METHODS   = "GET,POST,OPTIONS"
+      CORS_ALLOW_HEADERS   = "Content-Type,Authorization"
+      CORS_MAX_AGE         = "3600"
     }
   }
 }
 
-resource "google_cloudfunctions2_function_iam_member" "public_invoker" {
-  location       = var.region
-  cloud_function = google_cloudfunctions2_function.fn.name
-  role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"
+resource "google_cloud_run_service_iam_member" "public_invoker" {
+  location = var.region
+  project  = var.project_id
+  service  = google_cloudfunctions2_function.fn.service_config[0].service
 
-  depends_on = [google_cloudfunctions2_function.fn]
+  role   = "roles/run.invoker"
+  member = "allUsers"
+}
+
+resource "google_firestore_database" "default" {
+  project     = var.project_id
+  name        = "(default)"
+  location_id = "nam5"
+  type        = "FIRESTORE_NATIVE"
+
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_project_iam_member" "fn_firestore_user" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.fn_runtime.email}"
+}
+
+resource "google_firestore_document" "counter_seed" {
+  project     = var.project_id
+  database    = "(default)"
+  collection  = "counter"
+  document_id = "global"
+
+  fields = jsonencode({
+    count = { integerValue = 0 }
+  })
 }
 
 output "function_url" {

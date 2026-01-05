@@ -35,7 +35,7 @@
         ci: true
 
     - name: Build Vite app
-      ansible.builtin.command: npm run build
+      ansible.builtin.command: npm run build_gcp
       args:
         chdir: "{{ frontend_dir }}"
 
